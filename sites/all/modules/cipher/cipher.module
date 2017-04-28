@@ -1,7 +1,7 @@
 <?php
     function cipher_menu() {
         $items['shift_cipher'] = array(
-            'title' => 'Shift Cipher',
+            'title' => 'Shift Cipher: Encode',
             'page callback' => 'drupal_get_form',
             'page arguments' => array('cipherize'),
             'access callback' => TRUE,
@@ -60,7 +60,7 @@
 
     function element_validate_phrase($element) {
         $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"');
+        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"', ' ');
         $invalid = false;
         $pieces = str_split($element['#value']);
         foreach($pieces as $piece) {
@@ -75,32 +75,35 @@
 
     function cipherize_submit($form, &$form_state) {
         $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"');
+        $reverse_alphabet = array_reverse($alphabet);
         $shift_value = $form_state['values']['shift_value'];
         $direction = $form_state['values']['direction'];
         $phrase = $form_state['values']['phrase'];
 
         $words = explode(' ', $phrase);
+        $new_words = [];
         foreach($words as $word) {
-            // $letters = str_split($word);
             for ($i = 0; $i < strlen($word); $i++) {
                 if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'left') {
                     $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
                     $word[$i] = $alphabet[$new_letter_index];
-                } else if (array_search(strtolower($word[$i]), $alphabet) >= 0 && $direction == 'left') {
-
+                } else if (array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0 && $direction == 'left') {
+                    $negative_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
+                    $word[$i] = $reverse_alphabet[abs($negative_index + 1)];
                 }
 
-                if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'right') {
+                if (array_search(strtolower($word[$i]), $alphabet) < (count($alphabet) - $shift_value) && $direction == 'right') {
                     $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
                     $word[$i] = $alphabet[$new_letter_index];
-                } else if (array_search(strtolower($word[$i]), $alphabet) >= 0 && $direction == 'right') {
-
+                } else if (array_search(strtolower($word[$i]), $alphabet) >= (count($alphabet) - $shift_value) && $direction == 'right') {
+                    $over_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
+                    $reverse_index = $over_index - (count($alphabet));
+                    $word[$i] = $alphabet[$reverse_index];
                 }
             }
-            $_SESSION['word'] = $word;
+            array_push($new_words, $word);
         }
-        $output_phrase = implode(' ', $words);
+        $output_phrase = implode(' ', $new_words);
         $_SESSION['encrypted_phrase'] = $output_phrase;
 
 
@@ -108,6 +111,5 @@
     }
 
     function cipher_output() {
-        return $_SESSION['word'];
-        // return "your form submitted: " . $_SESSION['encrypted_phrase'];
+        return "your form submitted: " . $_SESSION['encrypted_phrase'];
     }
