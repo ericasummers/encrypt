@@ -20,23 +20,48 @@
         $form['shift_value'] = array(
             '#title' => 'Shift Value',
             '#type' => 'textfield',
-            '#description' => 'How many letters over should each one be shifted',
+            '#description' => t('How many letters over should each one be shifted'),
+            '#element_validate' => array('element_validate_integer_positive', 'element_validate_range'),
+            '#required' => TRUE,
         );
         $form['direction'] = array(
             '#title' => 'Shift Direction',
             '#type' => 'textfield',
-            '#description' => 'Which direction should the letters be shifted: left or right?',
+            '#description' => t('Which direction should the letters be shifted: left or right?'),
+            '#element_validate' => array('element_validate_direction'),
+            '#required' => TRUE,
         );
         $form['phrase'] = array(
             '#title' => 'Phrase',
             '#type' => 'textfield',
-            '#description' => 'Phrase to be encrypted',
+            '#description' => t('Phrase to be encrypted'),
+            '#element_validate' => array('element_validate_phrase'),
+            '#required' => TRUE,
         );
         $form['submit'] = array(
             '#type' => 'submit',
             '#value' => 'Encrypt my phrase!',
         );
         return $form;
+    }
+
+    function element_validate_range($element) {
+        if ($element['#value'] > 25 || $element['#value'] < 1) {
+            form_error($element, t('Number must be less than 26 or greater than 0.'));
+        }
+    }
+
+    function element_validate_direction($element) {
+        $directions = ['right', 'left'];
+        if (!in_array(strtolower($element['#value']), $directions)) {
+            form_error($element, t('Please enter a valid direction: "left" or "right".'));
+        }
+    }
+
+    function element_validate_phrase($element) {
+        // if ($element['#value'] ) {
+        //     form_error($element, t(''));
+        // }
     }
 
     function cipherize_submit($form, &$form_state) {
