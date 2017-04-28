@@ -64,7 +64,7 @@
         $invalid = false;
         $pieces = str_split($element['#value']);
         foreach($pieces as $piece) {
-            if (!in_array($piece, $alphabet) && !in_array($piece, $punctuation)) {
+            if (!in_array(strtolower($piece), $alphabet) && !in_array($piece, $punctuation)) {
                 $invalid = true;
             }
         }
@@ -75,26 +75,39 @@
 
     function cipherize_submit($form, &$form_state) {
         $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"');
         $shift_value = $form_state['values']['shift_value'];
         $direction = $form_state['values']['direction'];
         $phrase = $form_state['values']['phrase'];
 
         $words = explode(' ', $phrase);
-        // foreach($words as $word) {
-        //     $letters = explode('', $word);
-        //     for ($i = 0; $i < count($letters); $i++) {
-        //         if (array_search($letters[$i], $alphabet) >= $shift_value) {
-        //             array_replace($letters, $alphabet[$letters[$i]] => ($letters[$i - $shift_value]));
-        //         } else if (array_search($letters[$i], $alphabet) < $shift_value && array_search($letters[$i], $alphabet) >= 0) {
-        //             array_replace($letters, $letters[$i] => ($letters[$i - $shift_value]));
-        //         }
-        //     }
-        // }
+        foreach($words as $word) {
+            // $letters = str_split($word);
+            for ($i = 0; $i < strlen($word); $i++) {
+                if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'left') {
+                    $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
+                    $word[$i] = $alphabet[$new_letter_index];
+                } else if (array_search(strtolower($word[$i]), $alphabet) >= 0 && $direction == 'left') {
+
+                }
+
+                if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'right') {
+                    $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
+                    $word[$i] = $alphabet[$new_letter_index];
+                } else if (array_search(strtolower($word[$i]), $alphabet) >= 0 && $direction == 'right') {
+
+                }
+            }
+            $_SESSION['word'] = $word;
+        }
+        $output_phrase = implode(' ', $words);
+        $_SESSION['encrypted_phrase'] = $output_phrase;
 
 
         $form_state['redirect'] = 'cipher_result';
     }
 
     function cipher_output() {
-        return "your form submitted";
+        return $_SESSION['word'];
+        // return "your form submitted: " . $_SESSION['encrypted_phrase'];
     }
