@@ -59,9 +59,18 @@
     }
 
     function element_validate_phrase($element) {
-        // if ($element['#value'] ) {
-        //     form_error($element, t(''));
-        // }
+        $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"');
+        $invalid = false;
+        $pieces = str_split($element['#value']);
+        foreach($pieces as $piece) {
+            if (!in_array($piece, $alphabet) && !in_array($piece, $punctuation)) {
+                $invalid = true;
+            }
+        }
+        if ($invalid == true) {
+            form_error($element, t('Please enter a phrase without numbers or special characters (punctuation is OK).'));
+        }
     }
 
     function cipherize_submit($form, &$form_state) {
