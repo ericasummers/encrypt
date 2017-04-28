@@ -87,15 +87,15 @@
                 if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'left') {
                     $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
                     $word[$i] = $alphabet[$new_letter_index];
-                } else if (array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0 && $direction == 'left') {
+                } else if ((array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0) && $direction == 'left') {
                     $negative_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
                     $word[$i] = $reverse_alphabet[abs($negative_index + 1)];
                 }
 
-                if (array_search(strtolower($word[$i]), $alphabet) < (count($alphabet) - $shift_value) && $direction == 'right') {
+                if (array_search(strtolower($word[$i]), $alphabet) < (count($alphabet) - $shift_value) && (array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0) && $direction == 'right') {
                     $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
                     $word[$i] = $alphabet[$new_letter_index];
-                } else if (array_search(strtolower($word[$i]), $alphabet) >= (count($alphabet) - $shift_value) && $direction == 'right') {
+                } else if ((array_search(strtolower($word[$i]), $alphabet) > (count($alphabet) - $shift_value) || array_search(strtolower($word[$i]), $alphabet) === (count($alphabet) - $shift_value)) && $direction == 'right') {
                     $over_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
                     $reverse_index = $over_index - (count($alphabet));
                     $word[$i] = $alphabet[$reverse_index];
