@@ -1,0 +1,66 @@
+<?php
+    function cipher_menu() {
+        $items['shift_cipher'] = array(
+            'title' => 'Shift Cipher',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('cipherize'),
+            'access callback' => TRUE,
+            'type' => MENU_NORMAL_ITEM,
+        );
+        $items['cipher_result'] = array(
+            'title' => 'Cipher Results',
+            'page callback' => 'cipher_output',
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+        );
+        return $items;
+    }
+
+    function cipherize() {
+        $form['shift_value'] = array(
+            '#title' => 'Shift Value',
+            '#type' => 'textfield',
+            '#description' => 'How many letters over should each one be shifted',
+        );
+        $form['direction'] = array(
+            '#title' => 'Shift Direction',
+            '#type' => 'textfield',
+            '#description' => 'Which direction should the letters be shifted: left or right?',
+        );
+        $form['phrase'] = array(
+            '#title' => 'Phrase',
+            '#type' => 'textfield',
+            '#description' => 'Phrase to be encrypted',
+        );
+        $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => 'Encrypt my phrase!',
+        );
+        return $form;
+    }
+
+    function cipherize_submit($form, &$form_state) {
+        $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+        $shift_value = $form_state['values']['shift_value'];
+        $direction = $form_state['values']['direction'];
+        $phrase = $form_state['values']['phrase'];
+
+        $words = explode(' ', $phrase);
+        // foreach($words as $word) {
+        //     $letters = explode('', $word);
+        //     for ($i = 0; $i < count($letters); $i++) {
+        //         if (array_search($letters[$i], $alphabet) >= $shift_value) {
+        //             array_replace($letters, $alphabet[$letters[$i]] => ($letters[$i - $shift_value]));
+        //         } else if (array_search($letters[$i], $alphabet) < $shift_value && array_search($letters[$i], $alphabet) >= 0) {
+        //             array_replace($letters, $letters[$i] => ($letters[$i - $shift_value]));
+        //         }
+        //     }
+        // }
+
+
+        $form_state['redirect'] = 'cipher_result';
+    }
+
+    function cipher_output() {
+        return "your form submitted";
+    }
