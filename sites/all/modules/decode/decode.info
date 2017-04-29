@@ -1,0 +1,5 @@
+name = Cipher Decoder
+description = A decoder that decrypts phrases given certain parameters.
+package = Custom Modules
+core = 7.x
+files[] = decode.module

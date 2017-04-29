@@ -1,0 +1,115 @@
+<?php
+    function decode_menu() {
+        $items['decipher_phrase'] = array(
+            'title' => 'Shift Cipher Decode',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('decipher'),
+            'access callback' => TRUE,
+            'type' => MENU_NORMAL_ITEM,
+        );
+        $items['decipher_result'] = array(
+            'title' => 'Decoder Results',
+            'page callback' => 'decipher_output',
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+        );
+        return $items;
+    }
+
+    function decipher() {
+        $form['shift_value'] = array(
+            '#title' => 'Shift Value',
+            '#type' => 'textfield',
+            '#description' => t('How many letters back should each one be shifted to decrypt the message'),
+            '#element_validate' => array('element_validate_integer_positive', 'element_validate_range_decode'),
+            '#required' => TRUE,
+        );
+        $form['direction'] = array(
+            '#title' => 'Shift Direction',
+            '#type' => 'textfield',
+            '#description' => t('Which direction should the letters be shifted: left or right?'),
+            '#element_validate' => array('element_validate_direction_decode'),
+            '#required' => TRUE,
+        );
+        $form['phrase'] = array(
+            '#title' => 'Phrase',
+            '#type' => 'textfield',
+            '#description' => t('Phrase to be decrypted'),
+            '#element_validate' => array('element_validate_cipher'),
+            '#required' => TRUE,
+        );
+        $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => 'Decrypt my phrase!',
+        );
+        return $form;
+    }
+
+    function element_validate_range_decode($element) {
+        if ($element['#value'] > 25 || $element['#value'] < 1) {
+            form_error($element, t('Number must be less than 26 or greater than 0.'));
+        }
+    }
+
+    function element_validate_direction_decode($element) {
+        $directions = ['right', 'left'];
+        if (!in_array(strtolower($element['#value']), $directions)) {
+            form_error($element, t('Please enter a valid direction: "left" or "right".'));
+        }
+    }
+
+    function element_validate_cipher($element) {
+        $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+        $punctuation = array(",", ".", "!", "?", "'s", "(", ")", "-", "'", '"', ' ');
+        $invalid = false;
+        $pieces = str_split($element['#value']);
+        foreach($pieces as $piece) {
+            if (!in_array(strtolower($piece), $alphabet) && !in_array($piece, $punctuation)) {
+                $invalid = true;
+            }
+        }
+        if ($invalid == true) {
+            form_error($element, t('Please enter a phrase without numbers or special characters (punctuation is OK).'));
+        }
+    }
+
+    function decipher_submit($form, &$form_state) {
+        $alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+        $reverse_alphabet = array_reverse($alphabet);
+        $shift_value = $form_state['values']['shift_value'];
+        $direction = $form_state['values']['direction'];
+        $phrase = $form_state['values']['phrase'];
+
+        $words = explode(' ', $phrase);
+        $new_words = [];
+        foreach($words as $word) {
+            for ($i = 0; $i < strlen($word); $i++) {
+                if (array_search(strtolower($word[$i]), $alphabet) >= $shift_value && $direction == 'left') {
+                    $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
+                    $word[$i] = $alphabet[$new_letter_index];
+                } else if ((array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0) && $direction == 'left') {
+                    $negative_index = (array_search(strtolower($word[$i]), $alphabet)) - $shift_value;
+                    $word[$i] = $reverse_alphabet[abs($negative_index + 1)];
+                }
+
+                if (array_search(strtolower($word[$i]), $alphabet) < (count($alphabet) - $shift_value) && (array_search(strtolower($word[$i]), $alphabet) > 0 || array_search(strtolower($word[$i]), $alphabet) === 0) && $direction == 'right') {
+                    $new_letter_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
+                    $word[$i] = $alphabet[$new_letter_index];
+                } else if ((array_search(strtolower($word[$i]), $alphabet) > (count($alphabet) - $shift_value) || array_search(strtolower($word[$i]), $alphabet) === (count($alphabet) - $shift_value)) && $direction == 'right') {
+                    $over_index = (array_search(strtolower($word[$i]), $alphabet)) + $shift_value;
+                    $reverse_index = $over_index - (count($alphabet));
+                    $word[$i] = $alphabet[$reverse_index];
+                }
+            }
+            array_push($new_words, $word);
+        }
+        $output_phrase = implode(' ', $new_words);
+        $_SESSION['decrypted_phrase'] = $output_phrase;
+
+
+        $form_state['redirect'] = 'decipher_result';
+    }
+
+    function decipher_output() {
+        return "your form submitted: " . $_SESSION['decrypted_phrase'];
+    }
